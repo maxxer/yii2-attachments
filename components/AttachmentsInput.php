@@ -82,7 +82,9 @@ fileInput.on('filebatchuploadcomplete', function(event, files, extra) { // all f
     console.log('uploaded');
     filesUploaded = true;
     $('#file-input').fileinput('unlock');
-    form.submit();
+	if( !form.find('.file-error-message').text() ) {
+		form.submit();
+	}
 });
 
 fileInput.on('filebatchselected', function(event, files) { // there are some files to upload
