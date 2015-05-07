@@ -15,7 +15,7 @@ class Module extends \yii\base\Module
     public $tempPath = '@app/uploads/temp';
 
     public $rules = [];
-
+    
     public function init()
     {
         parent::init();
@@ -118,10 +118,13 @@ class Module extends \yii\base\Module
             throw new \Exception('Owner must have id when you attach file');
         }
 
+        if (end(explode(".", $filePath)) == "caption")
+             return true;
+
         if (!file_exists($filePath)) {
             throw new \Exception('File not exist :' . $filePath);
         }
-
+        
         $fileHash = md5(microtime(true) . $filePath);
         $fileType = pathinfo($filePath, PATHINFO_EXTENSION);
         $newFileName = $fileHash . '.' . $fileType;
@@ -144,6 +147,11 @@ class Module extends \yii\base\Module
         $file->size = filesize($filePath);
         $file->type = $fileType;
         $file->mime = FileHelper::getMimeType($filePath);
+        \yii::trace("reading $filePath.caption", "MAXXER");
+        if (file_exists($filePath.".caption")) {
+            $file->title = file_get_contents ($filePath.".caption");
+            unlink($filePath.".caption");
+        }
 
         if ($file->save()) {
             unlink($filePath);

@@ -38,7 +38,21 @@ class AttachmentsInput extends Widget
             'uploadUrl' => Url::toRoute('/attachments/file/upload'),
             'initialPreview' => $this->model->isNewRecord ? [] : $this->model->getInitialPreview(),
             'initialPreviewConfig' => $this->model->isNewRecord ? [] : $this->model->getInitialPreviewConfig(),
-            'uploadAsync' => false
+            'uploadAsync' => false,
+            'previewTemplates' => ['image' => '<div class="file-preview-frame" id="{previewId}" data-fileindex="{fileindex}">
+    <img src="{data}" class="file-preview-image" title="{caption}" alt="{caption}" placeholder="Enter a caption" >
+         {footer}
+         
+         <input class="your-form-class" type="text" name="imageTitle[]" id="imageTitle_{fileindex}">
+</div>'],
+            'uploadExtraData' => new \yii\web\JsExpression("function() {
+    var obj = {};
+    $('.your-form-class').each(function() {
+        var id = $(this).attr('id'), val = $(this).val();
+        obj[id] = val;
+    });
+    return obj;
+}"),
         ]);
 
         $this->options = array_replace($this->options, [

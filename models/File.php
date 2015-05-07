@@ -11,6 +11,7 @@ use yii\helpers\Url;
  * This is the model class for table "attach_file".
  *
  * @property integer $id
+ * @property string $title
  * @property string $name
  * @property string $model
  * @property integer $itemId
@@ -39,7 +40,7 @@ class File extends ActiveRecord
         return [
             [['name', 'model', 'itemId', 'hash', 'size', 'type', 'mime'], 'required'],
             [['itemId', 'size'], 'integer'],
-            [['name', 'model', 'hash', 'type', 'mime'], 'string', 'max' => 255]
+            [['name', 'title', 'model', 'hash', 'type', 'mime'], 'string', 'max' => 255]
         ];
     }
 
@@ -50,6 +51,7 @@ class File extends ActiveRecord
     {
         return [
             'id' => 'ID',
+            'title' => 'Title',
             'name' => 'Name',
             'model' => 'Model',
             'itemId' => 'Item ID',

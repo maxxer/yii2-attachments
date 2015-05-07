@@ -22,6 +22,8 @@ class FileController extends Controller
         if ($model->rules()[0]['maxFiles'] == 1) {
             $model->file = UploadedFile::getInstances($model, 'file')[0];
         }
+//        echo \yii\helpers\VarDumper::dumpAsString(\Yii::$app->request->getBodyParams());
+        $caption = \Yii::$app->request->getBodyParam("imageTitle_".\Yii::$app->request->getBodyParam("file_id"));
 
         if ($model->file && $model->validate()) {
             $result['uploadedFiles'] = [];
@@ -30,6 +32,9 @@ class FileController extends Controller
                     $path = $this->getModule()->getUserDirPath() . DIRECTORY_SEPARATOR . $file->name;
                     $file->saveAs($path);
                     $result['uploadedFiles'][] = $file->name;
+                    // MAXXER FIXME
+                    file_put_contents("$path.caption", $caption);
+                    \yii::trace("saving $caption to $path.caption", "MAXXER");
                 }
             } else {
                 $path = $this->getModule()->getUserDirPath() . DIRECTORY_SEPARATOR . $model->file->name;
