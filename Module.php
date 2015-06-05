@@ -15,7 +15,7 @@ class Module extends \yii\base\Module
     public $tempPath = '@app/uploads/temp';
 
     public $rules = [];
-    
+
     public function init()
     {
         parent::init();
@@ -118,15 +118,15 @@ class Module extends \yii\base\Module
             throw new \Exception('Owner must have id when you attach file');
         }
 
-        if (end(explode(".", $filePath)) == "caption")
-             return true;
-
         if (!file_exists($filePath)) {
             throw new \Exception('File not exist :' . $filePath);
         }
-        
+
         $fileHash = md5(microtime(true) . $filePath);
         $fileType = pathinfo($filePath, PATHINFO_EXTENSION);
+        $mime = FileHelper::getMimeType($filePath);
+        if (empty($fileType))
+            $fileType = preg_replace("/(\w+)\/(\w+)/",'${2}', $mime);
         $newFileName = $fileHash . '.' . $fileType;
         $fileDirPath = $this->getFilesDirPath($fileHash);
 
@@ -139,20 +139,15 @@ class Module extends \yii\base\Module
         }
 
         $file = new File();
-
         $file->name = pathinfo($filePath, PATHINFO_FILENAME);
         $file->model = $this->getShortClass($owner);
         $file->itemId = $owner->id;
         $file->hash = $fileHash;
         $file->size = filesize($filePath);
-        $file->type = $fileType;
-        $file->mime = FileHelper::getMimeType($filePath);
-        \yii::trace("reading $filePath.caption", "MAXXER");
-        if (file_exists($filePath.".caption")) {
-            $file->title = file_get_contents ($filePath.".caption");
-            unlink($filePath.".caption");
-        }
-
+        $file->mime = $mime;
+        $file->type = !empty($fileType) ? $fileType : preg_replace("/(\w+)\/(\w+)/",'${2}', $file->mime);
+        $file->additional_info = \yii\helpers\Json::encode(\Yii::$app->session['filesExtraData'][$file->name.".".$file->type]);
+        
         if ($file->save()) {
             unlink($filePath);
             return $file;
@@ -175,5 +170,14 @@ class Module extends \yii\base\Module
         unlink($filePath);
 
         $file->delete();
+    }
+
+    /**
+     * Check if we have the resize functionalities
+     * @throws Exception
+     */
+    public function checkResizeRequirements () 
+    {
+        return class_exists("\\himiklab\\thumbnail\\EasyThumbnailImage");
     }
 }

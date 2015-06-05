@@ -12,9 +12,11 @@ use nemmo\attachments\models\File;
 use nemmo\attachments\ModuleTrait;
 use yii\base\Behavior;
 use yii\db\ActiveRecord;
+use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\Html;
 use yii\helpers\Url;
+use yii\helpers\Json;
 use yii\web\UploadedFile;
 
 class FileBehavior extends Behavior
@@ -125,11 +127,46 @@ class FileBehavior extends Behavior
             $initialPreviewConfig[] = [
                 'caption' => "$file->name.$file->type",
                 'url' => Url::toRoute(['/attachments/file/delete',
-                    'id' => $file->id
+                'id' => $file->id
                 ]),
             ];
         }
 
         return $initialPreviewConfig;
+    }
+    public function getInitialPreviewThumbTags()
+    {
+        $initialPreviewThumbTags = [];
+
+        /**
+        $userTempDir = $this->getModule()->getUserDirPath();
+        foreach (FileHelper::findFiles($userTempDir) as $file) {
+            $filename = basename($file);
+            $initialPreviewThumbTags[] = [
+                'caption' => $filename,
+                'url' => Url::to(['/attachments/file/delete-temp',
+                    'filename' => $filename
+                ]),
+            ];
+        }
+         * 
+         */
+
+        foreach ($this->getFiles() as $index => $file) {
+            $additional_tags = Json::decode($file->additional_info);
+            $newArray = [];
+            if (is_array($additional_tags)) {
+                foreach ($additional_tags as $k => $v) {
+                    $newArray["{TAG_".strtoupper($k)."}"] = $v;
+                }
+            }
+            $initialPreviewThumbTags[] = ArrayHelper::merge([
+                '{id}' => $file->id,
+            ], $newArray);
+        }
+        \Yii::trace(\yii\helpers\VarDumper::dumpAsString($initialPreviewThumbTags), "MAXXER2");
+        \Yii::trace(\yii\helpers\VarDumper::dumpAsString($file->additional_info), "MAXXER2");
+
+        return $initialPreviewThumbTags;
     }
 }
